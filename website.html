@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Campus Transit</title>
+    <style>
+        html {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            background: #fff;
+            border-radius: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 20px 20px;
+            position: relative;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 10;
+            cursor: pointer;
+        }
+
+        .back-btn:active {
+            background: rgba(255,255,255,0.4);
+        }
+
+        .header h1 {
+            font-size: 22px;
+            margin-bottom: 5px;
+            animation: slideInDown 0.5s ease-out;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+            animation: slideInDown 0.6s ease-out;
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .content {
+            padding: 20px;
+            max-width: 375px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            animation: fadeInUp 0.5s ease-out;
+            animation-fill-mode: both;
+            cursor: pointer;
+        }
+
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+
+        .card:active {
+            background: #f0f0f0;
+            transform: scale(0.98);
+            transition: all 0.1s;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .bus-number {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.delayed {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .card-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .map-container {
+            background: #e8f4f8;
+            height: 300px;
+            border-radius: 12px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .map-roads {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .road {
+            position: absolute;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .road-horizontal {
+            height: 50px;
+            width: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            border-top: 2px dashed #ccc;
+            border-bottom: 2px dashed #ccc;
+        }
+
+        .building {
+            position: absolute;
+            background: linear-gradient(135deg, #f0f0f0 0%, #d0d0d0 100%);
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .building-1 {
+            width: 60px;
+            height: 50px;
+            top: 20px;
+            left: 20px;
+        }
+
+        .building-2 {
+            width: 50px;
+            height: 60px;
+            top: 20px;
+            right: 20px;
+        }
+
+        .building-3 {
+            width: 55px;
+            height: 45px;
+            bottom: 20px;
+            left: 30px;
+        }
+
+        .building-4 {
+            width: 65px;
+            height: 55px;
+            bottom: 20px;
+            right: 30px;
+        }
+
+        .tree {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #4ade80;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .tree::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 10px;
+            background: #92400e;
+            bottom: -10px;
+            left: 8px;
+        }
+
+        .route-path {
+            position: absolute;
+            width: 90%;
+            left: 5%;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+        }
+
+        .route-line {
+            width: 100%;
+            height: 6px;
+            background: transparent;
+            border-radius: 3px;
+            position: relative;
+        }
+
+        .route-segment {
+            position: absolute;
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 3px;
+            box-shadow: 0 2px 6px rgba(102, 126, 234, 0.4);
+        }
+
+        .bus-icon {
+            position: absolute;
+            left: 10%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 32px;
+            z-index: 20;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+            animation: moveBusRealistic 8s ease-in-out infinite;
+        }
+
+        @keyframes moveBusRealistic {
+            0% { 
+                left: 10%; 
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+            25% { 
+                left: 35%; 
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+            25.1% {
+                transform: translate(-50%, -50%) rotate(-5deg);
+            }
+            28% {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+            50% { 
+                left: 60%; 
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+            50.1% {
+                transform: translate(-50%, -50%) rotate(-5deg);
+            }
+            53% {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+            75% { 
+                left: 85%; 
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+            75.1% {
+                transform: translate(-50%, -50%) rotate(-5deg);
+            }
+            78% {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+            100% { 
+                left: 90%; 
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+        }
+
+        .stop-point {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border: 4px solid #667eea;
+            border-radius: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.5);
+            z-index: 15;
+        }
+
+        .stop-point.active {
+            background: #667eea;
+            animation: pulseStop 2s infinite;
+        }
+
+        .stop-point.completed {
+            background: #22c55e;
+            border-color: #22c55e;
+        }
+
+        @keyframes pulseStop {
+            0%, 100% { 
+                transform: translate(-50%, -50%) scale(1);
+                box-shadow: 0 2px 8px rgba(102, 126, 234, 0.5);
+            }
+            50% { 
+                transform: translate(-50%, -50%) scale(1.3);
+                box-shadow: 0 4px 16px rgba(102, 126, 234, 0.8);
+            }
+        }
+
+        .stop-label {
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(102, 126, 234, 0.95);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 10px;
+            white-space: nowrap;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .stop-label::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 4px solid rgba(102, 126, 234, 0.95);
+        }
+
+        .map-placeholder {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .eta-banner {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        .eta-banner h2 {
+            font-size: 32px;
+            margin-bottom: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .qr-container {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .qr-placeholder {
+            width: 200px;
+            height: 200px;
+            background: #f0f0f0;
+            border: 3px solid #667eea;
+            border-radius: 12px;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            animation: scanPulse 2s infinite;
+        }
+
+        @keyframes scanPulse {
+            0%, 100% { 
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+            }
+            50% { 
+                box-shadow: 0 0 20px 10px rgba(102, 126, 234, 0.3);
+            }
+        }
+
+        .seat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .seat {
+            aspect-ratio: 1;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            animation: fadeInUp 0.3s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .seat:nth-child(1) { animation-delay: 0.05s; }
+        .seat:nth-child(2) { animation-delay: 0.1s; }
+        .seat:nth-child(3) { animation-delay: 0.15s; }
+        .seat:nth-child(4) { animation-delay: 0.2s; }
+        .seat:nth-child(5) { animation-delay: 0.05s; }
+        .seat:nth-child(6) { animation-delay: 0.1s; }
+        .seat:nth-child(7) { animation-delay: 0.15s; }
+        .seat:nth-child(8) { animation-delay: 0.2s; }
+
+        .seat.available {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .seat.available:active {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+        .seat.occupied {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .seat.selected {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 375px;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0 25px;
+            border-top: 1px solid #eee;
+            border-radius: 40px 40px 0 0;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #999;
+            font-size: 12px;
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+
+        .nav-item:active {
+            color: #667eea;
+        }
+
+        .nav-item.active {
+            color: #667eea;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .driver-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        .driver-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        button:active {
+            opacity: 0.8;
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-danger::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-danger:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+            max-width: 320px;
+            text-align: center;
+            animation: slideInNotif 0.3s ease-out;
+        }
+
+        @keyframes slideInNotif {
+            from {
+                transform: translate(-50%, -100px);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+
+        .splash-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            position: relative;
+            height: 100%;
+            width: 100%;
+        }
+
+        .logo {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounceIn 1s ease-out forwards;
+        }
+
+        .splash-screen h1 {
+            animation: fadeInUp 0.8s ease-out 0.3s forwards;
+            opacity: 0;
+        }
+
+        .splash-screen p {
+            animation: fadeInUp 0.8s ease-out 0.5s forwards;
+            opacity: 0;
+        }
+
+        .splash-screen button {
+            animation: fadeInUp 0.8s ease-out 0.7s forwards;
+            opacity: 0;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3) translateY(-50px);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .live-map-container {
+            height: calc(100% - 160px);
+            position: relative;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f0e7ff 100%);
+            overflow: hidden;
+        }
+
+        .google-map-style {
+            width: 100%;
+            height: 100%;
+            background: #e5e3df;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-grid {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(200,200,200,0.3) 19px, rgba(200,200,200,0.3) 20px),
+                repeating-linear-gradient(90deg, transparent, transparent 19px, rgba(200,200,200,0.3) 19px, rgba(200,200,200,0.3) 20px);
+        }
+
+        .map-road-main {
+            position: absolute;
+            background: #f0f0f0;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .map-road-h1 {
+            width: 100%;
+            height: 60px;
+            top: 35%;
+            border-top: 3px solid #d0d0d0;
+            border-bottom: 3px solid #d0d0d0;
+        }
+
+        .map-road-h2 {
+            width: 100%;
+            height: 50px;
+            top: 65%;
+            border-top: 2px solid #d0d0d0;
+            border-bottom: 2px solid #d0d0d0;
+        }
+
+        .map-road-v1 {
+            height: 100%;
+            width: 50px;
+            left: 30%;
+            border-left: 2px solid #d0d0d0;
+            border-right: 2px solid #d0d0d0;
+        }
+
+        .map-road-v2 {
+            height: 100%;
+            width: 45px;
+            right: 25%;
+            border-left: 2px solid #d0d0d0;
+            border-right: 2px solid #d0d0d0;
+        }
+
+        .bus-marker {
+            position: absolute;
+            z-index: 100;
+            animation: markerPulse 2s infinite;
+        }
+
+        .bus-marker-icon {
+            width: 40px;
+            height: 40px;
+            background: #1e88e5;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            box-shadow: 0 4px 12px rgba(30, 136, 229, 0.5);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .bus-marker-icon::before {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: rgba(30, 136, 229, 0.2);
+            border-radius: 50%;
+            animation: ripple 2s infinite;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        @keyframes markerPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .location-marker {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #4285f4;
+            border: 4px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            z-index: 90;
+        }
+
+        .location-marker::after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: rgba(66, 133, 244, 0.2);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: locationPulse 2s infinite;
+        }
+
+        @keyframes locationPulse {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .map-landmark {
+            position: absolute;
+            font-size: 24px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .recenter-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            font-size: 24px;
+            z-index: 200;
+            cursor: pointer;
+        }
+
+        .recenter-btn:active {
+            background: #f0f0f0;
+        }
+
+        .map-legend {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: white;
+            padding: 12px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 150;
+            font-size: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        .nearby-buses {
+            padding: 15px 20px;
+            background: white;
+            border-top: 1px solid #eee;
+        }
+
+        .nearby-buses h3 {
+            margin-bottom: 12px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .bus-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        .bus-list-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .bus-list-item:active {
+            background: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <div class="notification" id="notif"></div>
+
+        <!-- Splash -->
+        <div class="screen active" id="splash">
+            <div class="splash-screen">
+                <div class="logo">🚌</div>
+                <h1 style="font-size: 32px; margin-bottom: 10px;">Smart Campus Transit</h1>
+                <p style="opacity: 0.9;">Your reliable campus companion</p>
+                <button onclick="go('home')" style="position: absolute; bottom: 60px; width: calc(100% - 80px);">Get Started</button>
+            </div>
+        </div>
+
+        <!-- Home -->
+        <div class="screen" id="home">
+            <div class="header">
+                <h1>Welcome, Student! 👋</h1>
+                <p>Track your bus in real-time</p>
+            </div>
+            <div class="content" style="padding-bottom: 100px;">
+                <div class="card" onclick="go('tracking')">
+                    <div class="card-header">
+                        <span class="bus-number">🚌 Bus A-12</span>
+                        <span class="status active">Active</span>
+                    </div>
+                    <div class="card-info">
+                        <span>📍 Next: Thirumangalam</span>
+                        <span>⏱️ ETA: 6 mins</span>
+                    </div>
+                    <div class="card-info">
+                        <span>💺 8 seats available</span>
+                        <span>👥 23 passengers</span>
+                    </div>
+                </div>
+
+                <div class="card" onclick="go('tracking')">
+                    <div class="card-header">
+                        <span class="bus-number">🚌 Bus B-7</span>
+                        <span class="status delayed">Delayed</span>
+                    </div>
+                    <div class="card-info">
+                        <span>📍 Next: Anna Nagar Tower</span>
+                        <span>⏱️ ETA: 15 mins</span>
+                    </div>
+                    <div class="card-info">
+                        <span>💺 12 seats available</span>
+                        <span>👥 18 passengers</span>
+                    </div>
+                </div>
+
+                <div class="card" onclick="go('qr')">
+                    <div style="text-align: center; padding: 20px;">
+                        <div style="font-size: 48px; margin-bottom: 10px;">📱</div>
+                        <h3>QR Check-in</h3>
+                        <p style="color: #666; margin-top: 8px;">Scan to mark attendance</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tracking -->
+        <div class="screen" id="tracking">
+            <div class="header">
+                <button class="back-btn" onclick="go('home')">← Back</button>
+                <h1>Bus A-12 Live 🚌</h1>
+                <p>Campus → Thirumangalam → Anna Nagar</p>
+            </div>
+            <div class="content" style="padding-bottom: 100px;">
+                <div class="eta-banner">
+                    <h2>6 minutes</h2>
+                    <p>Bus arriving at Thirumangalam</p>
+                </div>
+
+                <div class="map-container">
+                    <div class="map-placeholder">
+                        <div class="map-roads">
+                            <div class="road road-horizontal"></div>
+                            <div class="building building-1"></div>
+                            <div class="building building-2"></div>
+                            <div class="building building-3"></div>
+                            <div class="building building-4"></div>
+                            <div class="tree" style="top: 15%; left: 45%;"></div>
+                            <div class="tree" style="top: 70%; left: 15%;"></div>
+                            <div class="tree" style="top: 75%; right: 15%;"></div>
+                        </div>
+                        
+                        <div class="route-path">
+                            <div class="route-line">
+                                <div class="route-segment" style="left: 0; width: 100%;"></div>
+                            </div>
+                            <div class="stop-point completed" style="left: 10%;">
+                                <div class="stop-label">Campus</div>
+                            </div>
+                            <div class="stop-point active" style="left: 35%;">
+                                <div class="stop-label">Thirumangalam</div>
+                            </div>
+                            <div class="stop-point" style="left: 60%;">
+                                <div class="stop-label">Anna Nagar</div>
+                            </div>
+                            <div class="stop-point" style="left: 85%;">
+                                <div class="stop-label">Shenoy Nagar</div>
+                            </div>
+                            <div class="bus-icon">🚌</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="driver-info">
+                    <div class="driver-avatar">RK</div>
+                    <div style="flex: 1;">
+                        <h3 style="margin-bottom: 4px;">Rajesh Kumar</h3>
+                        <p style="color: #666; font-size: 14px;">⭐ 4.8 Rating • 5 years exp.</p>
+                        <p style="color: #666; font-size: 12px;">📞 +91 98765 43210</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 12px;">Upcoming Stops</h3>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+                        <span>📍 Thirumangalam</span>
+                        <span style="color: #667eea; font-weight: bold;">6 mins</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+                        <span>📍 Anna Nagar Tower</span>
+                        <span>12 mins</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+                        <span>📍 Anna Nagar East</span>
+                        <span>18 mins</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                        <span>📍 Shenoy Nagar</span>
+                        <span>24 mins</span>
+                    </div>
+                </div>
+
+                <div class="card" style="text-align: center; background: linear-gradient(135deg, #fff7e6 0%, #ffe4b5 100%); border: 2px solid #ffa500;">
+                    <h3 style="color: #d97706; margin-bottom: 8px;">💺 Seat Availability</h3>
+                    <div style="text-align: center; margin: 15px 0;">
+                        <div style="display: inline-flex; gap: 20px; font-size: 14px;">
+                            <span>🟩 Available</span>
+                            <span>🟥 Occupied</span>
+                        </div>
+                        <p style="margin-top: 10px; font-weight: bold; color: #667eea; font-size: 16px;">Bus A-12 - 8 seats available</p>
+                    </div>
+                    <div class="seat-grid">
+                        <div class="seat available">1A</div>
+                        <div class="seat available">1B</div>
+                        <div class="seat occupied">1C</div>
+                        <div class="seat occupied">1D</div>
+                        <div class="seat occupied">2A</div>
+                        <div class="seat available">2B</div>
+                        <div class="seat available">2C</div>
+                        <div class="seat occupied">2D</div>
+                        <div class="seat available">3A</div>
+                        <div class="seat occupied">3B</div>
+                        <div class="seat occupied">3C</div>
+                        <div class="seat available">3D</div>
+                        <div class="seat occupied">4A</div>
+                        <div class="seat available">4B</div>
+                        <div class="seat occupied">4C</div>
+                        <div class="seat occupied">4D</div>
+                        <div class="seat available">5A</div>
+                        <div class="seat occupied">5B</div>
+                        <div class="seat available">5C</div>
+                        <div class="seat occupied">5D</div>
+                    </div>
+                    <p style="color: #92400e; font-size: 12px; margin-top: 10px;">Reserve via QR Check-in when boarding</p>
+                </div>
+
+                <button onclick="go('qr')">📱 Go to QR Check-in</button>
+                <button class="btn-danger" onclick="notify('🚨 Emergency alert sent to admin, driver & campus security!')">🚨 Emergency Alert</button>
+            </div>
+        </div>
+
+        <!-- QR -->
+        <div class="screen" id="qr">
+            <div class="header">
+                <button class="back-btn" onclick="go('home')">← Back</button>
+                <h1>QR Check-in 📱</h1>
+                <p>Scan to mark attendance</p>
+            </div>
+            <div class="content">
+                <div class="qr-container">
+                    <div class="qr-placeholder">📱</div>
+                    <h2>Student ID: 2024CS001</h2>
+                    <p style="color: #666; margin-top: 10px;">Show this QR to the driver</p>
+                    <button onclick="notify('✅ Check-in successful!')">Simulate Check-in</button>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 12px;">Today's Journey</h3>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                        <span>✅ Morning: Bus A-12</span>
+                        <span style="color: #28a745; font-weight: bold;">8:30 AM</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; color: #999;">
+                        <span>⏳ Evening: Not yet</span>
+                        <span>--:--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Map -->
+        <div class="screen" id="livemap">
+            <div class="header">
+                <button class="back-btn" onclick="go('home')">← Back</button>
+                <h1>Live Map 🗺️</h1>
+                <p>All buses near you</p>
+            </div>
+            <div class="live-map-container">
+                <div class="google-map-style">
+                    <div class="map-grid"></div>
+                    
+                    <div class="map-road-main map-road-h1"></div>
+                    <div class="map-road-main map-road-h2"></div>
+                    <div class="map-road-main map-road-v1"></div>
+                    <div class="map-road-main map-road-v2"></div>
+                    
+                    <div class="map-landmark" style="top: 15%; left: 10%;">🏫</div>
+                    <div class="map-landmark" style="top: 20%; right: 15%;">🏥</div>
+                    <div class="map-landmark" style="bottom: 25%; left: 15%;">🏪</div>
+                    <div class="map-landmark" style="bottom: 20%; right: 10%;">🏢</div>
+                    <div class="map-landmark" style="top: 50%; left: 20%;">🌳</div>
+                    <div class="map-landmark" style="top: 60%; right: 25%;">🌳</div>
+                    
+                    <div class="location-marker" style="top: 50%; left: 50%;"></div>
+                    
+                    <div class="bus-marker" style="top: 35%; left: 20%;">
+                        <div class="bus-marker-icon" onclick="showBusInfo('A-12')">A-12</div>
+                    </div>
+                    
+                    <div class="bus-marker" style="top: 65%; left: 55%;">
+                        <div class="bus-marker-icon" onclick="showBusInfo('B-7')" style="background: #43a047;">B-7</div>
+                    </div>
+                    
+                    <div class="bus-marker" style="top: 40%; right: 20%;">
+                        <div class="bus-marker-icon" onclick="showBusInfo('C-5')" style="background: #e53935;">C-5</div>
+                    </div>
+                    
+                    <div class="bus-marker" style="bottom: 28%; left: 35%;">
+                        <div class="bus-marker-icon" onclick="showBusInfo('D-9')" style="background: #fb8c00;">D-9</div>
+                    </div>
+                    
+                    <div class="bus-marker" style="top: 25%; left: 65%;">
+                        <div class="bus-marker-icon" onclick="showBusInfo('27')" style="background: #8e24aa;">27</div>
+                    </div>
+
+                    <div class="map-legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #4285f4;"></div>
+                            <span>Your Location</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #1e88e5;"></div>
+                            <span>Campus Buses</span>
+                        </div>
+                    </div>
+
+                    <div class="recenter-btn" onclick="notify('📍 Map centered to your location')">🎯</div>
+                </div>
+            </div>
+
+            <div class="nearby-buses">
+                <h3>Nearby Buses (5)</h3>
+                <div class="bus-list-item" onclick="go('tracking')">
+                    <div>
+                        <strong style="color: #1e88e5;">Bus A-12</strong>
+                        <div style="font-size: 12px; color: #666; margin-top: 4px;">0.8 km away • 6 mins</div>
+                    </div>
+                    <div style="font-size: 12px; color: #28a745; font-weight: bold;">8 seats</div>
+                </div>
+                <div class="bus-list-item">
+                    <div>
+                        <strong style="color: #43a047;">Bus B-7</strong>
+                        <div style="font-size: 12px; color: #666; margin-top: 4px;">1.2 km away • 10 mins</div>
+                    </div>
+                    <div style="font-size: 12px; color: #28a745; font-weight: bold;">12 seats</div>
+                </div>
+                <div class="bus-list-item">
+                    <div>
+                        <strong style="color: #e53935;">Bus C-5</strong>
+                        <div style="font-size: 12px; color: #666; margin-top: 4px;">1.5 km away • 12 mins</div>
+                    </div>
+                    <div style="font-size: 12px; color: #28a745; font-weight: bold;">15 seats</div>
+                </div>
+                <div class="bus-list-item">
+                    <div>
+                        <strong style="color: #fb8c00;">Bus D-9</strong>
+                        <div style="font-size: 12px; color: #666; margin-top: 4px;">2.0 km away • 15 mins</div>
+                    </div>
+                    <div style="font-size: 12px; color: #28a745; font-weight: bold;">7 seats</div>
+                </div>
+                <div class="bus-list-item">
+                    <div>
+                        <strong style="color: #8e24aa;">Bus 27</strong>
+                        <div style="font-size: 12px; color: #666; margin-top: 4px;">2.3 km away • 18 mins</div>
+                    </div>
+                    <div style="font-size: 12px; color: #ffa726; font-weight: bold;">3 seats</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alternatives -->
+        <div class="screen" id="alternatives">
+            <div class="header">
+                <button class="back-btn" onclick="go('tracking')">← Back</button>
+                <h1>Alternative Buses 🔄</h1>
+                <p>Other options for your route</p>
+            </div>
+            <div class="content" style="padding-bottom: 100px;">
+                <div class="card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="font-size: 20px; font-weight: bold;">🚌 Bus C-5</span>
+                        <span style="background: rgba(255,255,255,0.3); padding: 4px 12px; border-radius: 12px; font-size: 12px;">Best Match</span>
+                    </div>
+                    <div style="margin: 8px 0;">📍 Same route • Arrives in 8 mins</div>
+                    <div style="margin: 8px 0;">💺 15 seats available</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="bus-number">🚌 Bus D-9</span>
+                        <span class="status active">Active</span>
+                    </div>
+                    <div class="card-info">
+                        <span>📍 Via Main Road</span>
+                        <span>⏱️ ETA: 12 mins</span>
+                    </div>
+                    <div class="card-info">
+                        <span>💺 7 seats available</span>
+                        <span>+3 mins longer</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="bus-number">🚌 Bus 27</span>
+                        <span class="status active">Active</span>
+                    </div>
+                    <div class="card-info">
+                        <span>📍 Via Anna Nagar</span>
+                        <span>⏱️ ETA: 18 mins</span>
+                    </div>
+                    <div class="card-info">
+                        <span>💺 3 seats available</span>
+                        <span>+5 mins longer</span>
+                    </div>
+                </div>
+
+                <button onclick="go('livemap')">🗺️ View All Buses on Map</button>
+            </div>
+        </div>
+
+        <!-- Bottom Nav -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="go('home'); setActiveNav(0)">
+                <div class="nav-icon">🏠</div>
+                <span>Home</span>
+            </div>
+            <div class="nav-item" onclick="go('tracking'); setActiveNav(1)">
+                <div class="nav-icon">📍</div>
+                <span>Track</span>
+            </div>
+            <div class="nav-item" onclick="go('qr'); setActiveNav(2)">
+                <div class="nav-icon">📱</div>
+                <span>Check-in</span>
+            </div>
+            <div class="nav-item" onclick="go('livemap'); setActiveNav(3)">
+                <div class="nav-icon">🗺️</div>
+                <span>Live Map</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function go(screen) {
+            var screens = document.querySelectorAll('.screen');
+            for (var i = 0; i < screens.length; i++) {
+                screens[i].classList.remove('active');
+            }
+            document.getElementById(screen).classList.add('active');
+        }
+        
+        function setActiveNav(index) {
+            var navs = document.querySelectorAll('.nav-item');
+            for (var i = 0; i < navs.length; i++) {
+                navs[i].classList.remove('active');
+            }
+            navs[index].classList.add('active');
+        }
+        
+        function notify(msg) {
+            var n = document.getElementById('notif');
+            n.textContent = msg;
+            n.style.display = 'block';
+            setTimeout(function() {
+                n.style.display = 'none';
+            }, 3000);
+        }
+        
+        function showBusInfo(busNum) {
+            notify('🚌 Bus ' + busNum + ' selected! Tap to view details');
+        }
+    </script>
+</body>
+</html>
